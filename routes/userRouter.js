@@ -1,7 +1,7 @@
 const express = require("express");
-const userController = require("../controllers/test");
+const userController = require("../controllers/user");
 const userRouter = express.Router();
 
-userRouter.use("/api/users", userController.getUsers);
+userRouter.use("/user/:id", userController.getUser);
 
 module.exports = userRouter;

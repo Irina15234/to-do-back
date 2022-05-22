@@ -118,7 +118,7 @@ const connection = mysql.createPool({
 });
 
 exports.getUsers = function(req, res){
-    connection.query("SELECT * FROM user", function(err, data) {
+    connection.query("SELECT * FROM users", function(err, data) {
         if(err) return console.log(err);
         res.send(data);
     });

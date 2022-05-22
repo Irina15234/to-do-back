@@ -1,47 +1,33 @@
 const express = require("express");
 const cors = require('cors');
-const crypto = require('crypto');
+const jwt = require("jsonwebtoken");
+const db = require('./connection');
+const { promisify } = require('util');
+jwt.verifyP = promisify(jwt.verify);
 
 const app = express();
 app.use(cors());
-
-const mysql = require("mysql2");
-const connection = mysql.createPool({
-    host: "localhost",
-    user: "root",
-    database: "trello",
-    password: "StarS3000"
-});
 
 const tokenKey = '1a2b-3c4d-5e6f-7g8h';
 
 app.use(express.json())
 app.use((req, res, next) => {
-    console.log(req.headers.authorization);
-    if (req.headers.authorization) {
-        let tokenParts = req.headers.authorization
-            .split(' ')[1]
-            .split('.')
-        let signature = crypto
-            .createHmac('SHA256', tokenKey)
-            .update(`${tokenParts[0]}.${tokenParts[1]}`)
-            .digest('base64')
+    const token = req.headers.authorization;
+    if (token) {
+        jwt.verify(req.headers.authorization, tokenKey, function(err, decoded) {
+            console.log(decoded);
+        }, null);
 
-        if (signature === tokenParts[2])
-            req.user = JSON.parse(
-                Buffer.from(tokenParts[1], 'base64').toString(
-                    'utf8'
-                )
-            )
 
-        next()
+
+        return next();
     }
 
-    next()
+    return next();
 });
 
 app.post('/auth', (req, res) => {
-    connection.query("SELECT * FROM user", function(err, data) {
+    db.query("SELECT * FROM users", function(err, data) {
         if(err) return console.log(err);
 
         for (let user of data) {
@@ -49,19 +35,13 @@ app.post('/auth', (req, res) => {
                 req.body.username === user.username &&
                 req.body.password === user.password
             ) {
-                let head = Buffer.from(
-                    JSON.stringify({ alg: 'HS256', typ: 'jwt' })
-                ).toString('base64')
-                let body = Buffer.from(JSON.stringify(user)).toString(
-                    'base64'
-                )
-                let signature = crypto
-                    .createHmac('SHA256', tokenKey)
-                    .update(`${head}.${body}`)
-                    .digest('base64')
+                const token = jwt.sign({ id: req.body.password }, tokenKey, {
+                    expiresIn: 86400
+                }, null);
 
                 return res.status(200).json({
-                    token: `${head}.${body}.${signature}`,
+                    token,
+                    id: user.id
                 })
             }
         }
@@ -79,8 +59,9 @@ app.get('/user', (req, res) => {
 })
 
 const boardRouter = require("./routes/boardRouter.js");
+const userRouter = require("./routes/userRouter.js");
 
-app.use("/", boardRouter);
+app.use("/", [userRouter, boardRouter]);
 
 app.listen(4000, function(){
     console.log("Сервер ожидает подключения...");
