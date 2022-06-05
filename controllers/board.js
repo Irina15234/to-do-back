@@ -1,4 +1,6 @@
 const db = require('../connection');
+const jwt = require("jsonwebtoken");
+const {TOKEN_KEY} = require("../common/constants");
 
 exports.getBoards = async function(req, res){
     const query = "select boards.boardId as id, boards.name, boards_columns.columnId, boards_columns.columnName\n" +
@@ -56,7 +58,7 @@ exports.saveBoard = async function(req, res){
     const columns = req.body.columns;
 
     const addBoardQuery = `INSERT boards(boardId, name) VALUES (${req.body.id}, '${req.body.name}')`;
-    const getBoardIdQuery = `SELECT LAST_INSERT_ID() as id`;
+    const getBoardIdQuery = `SELECT boardId FROM boards ORDER BY boardId DESC LIMIT 1`;
 
     await db.query(addBoardQuery);
 
@@ -64,10 +66,30 @@ exports.saveBoard = async function(req, res){
 
     const addColumnsQuery = `INSERT boards_columns(id, boardId, columnId, columnName) VALUES ?`;
     const columnsValues = columns.map((column) => {
-        return [null, newBoardId[0].id, column.id, column.name];
+        return [null, newBoardId[0].boardId, column.id, column.name];
     });
 
     db.query(addColumnsQuery, [columnsValues]);
 
-    return res.json({ ...board, id: newBoardId[0].id });
+    const authorId = getUserId(req.headers.authorization);
+
+    if (authorId) {
+        const adminId = 1;
+        const addBoardsUsersQuery = `INSERT boards_users(id, boardId, userId, roleId) VALUES (null, ${newBoardId[0].boardId}, ${authorId}, ${adminId})`;
+        db.query(addBoardsUsersQuery);
+    }
+
+    return res.json({ ...board, id: newBoardId[0].boardId });
+};
+
+const getUserId = (token) => {
+    let id = null;
+    if (token) {
+        jwt.verify(token.split(' ')[1], TOKEN_KEY, function (err, decoded) {
+            if (decoded) {
+                id = decoded.id;
+            }
+        }, null);
+    }
+    return id;
 };
