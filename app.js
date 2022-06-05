@@ -59,9 +59,10 @@ app.get('/user', (req, res) => {
 })
 
 const boardRouter = require("./routes/boardRouter.js");
+const taskRouter = require("./routes/taskRouter.js");
 const userRouter = require("./routes/userRouter.js");
 
-app.use("/", [userRouter, boardRouter]);
+app.use("/", [userRouter, boardRouter, taskRouter]);
 
 app.listen(4000, function(){
     console.log("Сервер ожидает подключения...");
