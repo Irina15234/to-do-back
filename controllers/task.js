@@ -35,3 +35,7 @@ const getUserId = (token) => {
     }
     return id;
 };
+
+exports.changeColumns = async function(req, res){
+
+};
