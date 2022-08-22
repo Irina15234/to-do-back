@@ -3,27 +3,16 @@ const jwt = require("jsonwebtoken");
 const {TOKEN_KEY} = require("../common/constants");
 
 exports.getBoards = async function(req, res){
-    const query = "select boards.boardId as id, boards.name, boards_columns.columnId, boards_columns.columnName\n" +
-        "from boards join boards_columns\n" +
-        "on boards.boardId=boards_columns.boardId";
+    const userId = getUserId(req.headers.authorization);
+
+    const query = `select boards.boardId as id, boards.name
+            from boards
+            join boards_users on boards.boardId=boards_users.boardId
+            where boards_users.userId=${userId}`;
 
     const result = await db.query(query);
 
-    const finishResult = [];
-    result.forEach((item) => {
-        const index = finishResult.findIndex((i) => i.id === item.id);
-        const isNeedAddItem = index === -1;
-        if (isNeedAddItem) {
-            const newItem = {...item, columns: [{id: item.columnId, name: item.columnName}]};
-            delete newItem.columnId;
-            delete newItem.columnName;
-            finishResult.push(newItem);
-        } else {
-            finishResult[index].columns.push({id: item.columnId,name: item.columnName});
-        }
-    });
-
-    return res.json(finishResult);
+    return res.json(result);
 };
 
 exports.getBoard = async function(req, res){
