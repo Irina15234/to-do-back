@@ -1,11 +1,12 @@
 const express = require("express");
-const urlencodedParser = express.urlencoded({extended: false});
 
 const boardController = require("../controllers/board");
 const boardRouter = express.Router();
 
-boardRouter.use("/boards", boardController.getBoards);
-boardRouter.use("/board/new", urlencodedParser, boardController.saveBoard);
-boardRouter.use("/board/:id", boardController.getBoard);
+boardRouter.route(`/list`).get(boardController.getBoards);
+boardRouter.route(`/:id`).get(boardController.getBoard);
+boardRouter.route(`/new`).post(boardController.saveBoard);
+boardRouter.route(`/:id`).put(boardController.updateBoard);
+boardRouter.route(`/:id`).delete(boardController.deleteBoard);
 
 module.exports = boardRouter;

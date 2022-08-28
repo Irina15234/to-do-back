@@ -61,7 +61,9 @@ const taskRouter = require("./routes/taskRouter.js");
 const userRouter = require("./routes/userRouter.js");
 const {TOKEN_KEY} = require("./common/constants");
 
-app.use("/", [userRouter, boardRouter, taskRouter]);
+app.use("/", [userRouter]);
+app.use("/board", [boardRouter]);
+app.use("/task", [taskRouter]);
 
 app.listen(4000, function(){
     console.log("Сервер ожидает подключения...");

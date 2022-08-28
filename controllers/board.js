@@ -76,3 +76,32 @@ exports.saveBoard = async function(req, res){
 
     return res.json({ ...board, id: newBoardId });
 };
+
+exports.updateBoard = async function(req, res){
+    if(!req.body) return res.status(400);
+
+    const board = req.body;
+    const columns = req.body.columns;
+
+    const updateBoardQuery = `UPDATE boards SET name='${board.name}' WHERE (id = '${board.id}')`;
+
+    await db.query(updateBoardQuery);
+
+    return res.status(200);
+};
+
+exports.deleteBoard = async function(req, res){
+    const boardId = req.params.id;
+
+    const deleteBoardQuery = `DELETE FROM boards WHERE (boardId = '${boardId}');`;
+    const deleteTasksQuery = `DELETE FROM tasks WHERE (boardId = '${boardId}');`;
+    const deleteColumnsQuery = `DELETE FROM boards_columns WHERE (boardId = '${boardId}');`;
+    const deleteUsersQuery = `DELETE FROM boards_users WHERE (boardId = '${boardId}');`;
+
+    await db.query(deleteBoardQuery);
+    db.query(deleteTasksQuery);
+    db.query(deleteColumnsQuery);
+    db.query(deleteUsersQuery);
+
+    return res.status(200).send('OK');
+};
