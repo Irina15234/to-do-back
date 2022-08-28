@@ -67,7 +67,7 @@ exports.changeColumns = async function(req, res){
 
     try {
         db.query(query);
-        return res.status(200);
+        return res.status(200).send('OK');
     } catch (e) {
         return res.status(500).json({message: "Server error"});
     }

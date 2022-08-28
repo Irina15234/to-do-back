@@ -83,11 +83,11 @@ exports.updateBoard = async function(req, res){
     const board = req.body;
     const columns = req.body.columns;
 
-    const updateBoardQuery = `UPDATE boards SET name='${board.name}' WHERE (id = '${board.id}')`;
+    const updateBoardQuery = `UPDATE boards SET name='${board.name}' WHERE (boardId = '${board.id}')`;
 
     await db.query(updateBoardQuery);
 
-    return res.status(200);
+    return res.status(200).send('OK');
 };
 
 exports.deleteBoard = async function(req, res){
