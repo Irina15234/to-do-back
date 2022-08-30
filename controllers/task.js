@@ -1,6 +1,5 @@
 const db = require('../connection');
-const jwt = require("jsonwebtoken");
-const {TOKEN_KEY} = require("../common/constants");
+const {getUserId} = require("../common/helpers");
 
 exports.getTasks = async function(req, res){
     const userId = getUserId(req.headers.authorization);
@@ -47,18 +46,6 @@ exports.getTask = async function(req, res){
     return res.json(...result);
 };
 
-const getUserId = (token) => {
-    let id = null;
-    if (token) {
-        jwt.verify(token.split(' ')[1], TOKEN_KEY, function (err, decoded) {
-            if (decoded) {
-                id = decoded.id;
-            }
-        }, null);
-    }
-    return id;
-};
-
 exports.changeColumns = async function(req, res){
     const targetColumnId = req.body.targetColumnId;
     const taskId = req.body.taskId;
@@ -91,4 +78,14 @@ exports.saveTask = async function(req, res){
     const newTaskId = await db.query(getTaskIdQuery);
 
     return res.json(newTaskId[0].id);
+};
+
+exports.deleteTask = async function(req, res){
+    const taskId = req.params.id;
+
+    const deleteTaskQuery = `DELETE FROM tasks WHERE (id = '${taskId}')`;
+
+    await db.query(deleteTaskQuery);
+
+    return res.status(200).send('OK');
 };
