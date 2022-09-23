@@ -105,3 +105,14 @@ exports.deleteBoard = async function(req, res){
 
     return res.status(200).send('OK');
 };
+
+exports.getBoardsUsers = async function(req, res){
+    const query = `select boards_users.userId as id, users.name, users.photo
+            from boards_users
+            join users on users.id=boards_users.userId
+            where boards_users.boardId=${req.params.id}`;
+
+    const result = await db.query(query);
+
+    return res.json(result);
+};

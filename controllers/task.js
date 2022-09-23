@@ -65,12 +65,8 @@ exports.saveTask = async function(req, res){
 
     const task = req.body;
 
-    const getPriorityIdQuery = `select id from dictionaries.priority where dictionaries.priority.name='${task.priorityName}'`;
-
-    const priorityId = await db.query(getPriorityIdQuery);
-
     const addTaskQuery = `INSERT tasks(name, authorId, executorId, date, boardId, priorityId, columnId) 
-    VALUES ('${task.name}', '${task.authorId}', '${task.executorId}', '${task.date}', '${task.boardId}', '${priorityId[0].id}', '${task.columnId}')`;
+    VALUES ('${task.name}', '${task.authorId}', '${task.executorId}', '${task.date}', '${task.boardId}', '${task.priorityId}', '${task.columnId}')`;
     const getTaskIdQuery = `SELECT id FROM tasks ORDER BY id DESC LIMIT 1`;
 
     await db.query(addTaskQuery);
