@@ -35,7 +35,7 @@ exports.getTask = async function(req, res){
     const taskId = req.params.id;
 
     const query = `select tasks.id, tasks.authorId, tasks.executorId, tasks.name, dictionaries.priority.name as priorityName,
-        dictionaries.priority.icon as priorityIcon, tasks.columnId, tasks.date, tasks.boardId
+        dictionaries.priority.icon as priorityIcon, dictionaries.priority.id as priorityId, tasks.columnId, tasks.date, tasks.boardId
         from tasks
         join dictionaries.priority on dictionaries.priority.id=tasks.priorityId
         join boards_users on tasks.boardId = boards_users.boardId
@@ -43,7 +43,21 @@ exports.getTask = async function(req, res){
 
     const result = await db.query(query);
 
-    return res.json(...result);
+    const finishResult = result.map((item) => {
+        const finishItem = {...item};
+        finishItem.priority = {
+            id: item.priorityId,
+            name: item.priorityName,
+            icon: item.priorityIcon
+        };
+        delete finishItem.priorityId;
+        delete finishItem.priorityName;
+        delete finishItem.priorityIcon;
+
+        return finishItem;
+    });
+
+    return res.json(...finishResult);
 };
 
 exports.changeColumns = async function(req, res){
@@ -84,4 +98,19 @@ exports.deleteTask = async function(req, res){
     await db.query(deleteTaskQuery);
 
     return res.status(200).send('OK');
+};
+
+exports.updateTask = async function(req, res){
+    const field = req.body.field;
+    const value = req.body.value;
+    const taskId = req.params.id;
+
+    const query = `UPDATE tasks SET ${field}=${value} where id=${taskId}`;
+
+    try {
+        await db.query(query);
+        return res.status(200).send('OK');
+    } catch (error) {
+        return res.status(500).send(error);
+    }
 };
