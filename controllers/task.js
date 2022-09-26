@@ -9,7 +9,8 @@ exports.getTasks = async function(req, res){
         const query = `select tasks.id, tasks.name, dictionaries.priority.icon as priorityIcon, dictionaries.priority.name as priorityName
             from tasks
             join dictionaries.priority on dictionaries.priority.id=tasks.priorityId
-            where ${userId}=tasks.executorId`;
+            where ${userId}=tasks.executorId
+            order by dictionaries.priority.id desc`;
 
         const result = await db.query(query);
 
@@ -35,10 +36,11 @@ exports.getTask = async function(req, res){
     const taskId = req.params.id;
 
     const query = `select tasks.id, tasks.authorId, tasks.executorId, tasks.name, dictionaries.priority.name as priorityName,
-        dictionaries.priority.icon as priorityIcon, dictionaries.priority.id as priorityId, tasks.columnId, tasks.date, tasks.boardId
+        dictionaries.priority.icon as priorityIcon, dictionaries.priority.id as priorityId, tasks.columnId, tasks.date, tasks.boardId, boards.name as boardName
         from tasks
         join dictionaries.priority on dictionaries.priority.id=tasks.priorityId
         join boards_users on tasks.boardId = boards_users.boardId
+        join boards on boards.boardId=tasks.boardId
         where tasks.id=${taskId}`;
 
     const result = await db.query(query);

@@ -80,8 +80,21 @@ exports.saveBoard = async function(req, res){
 exports.updateBoard = async function(req, res){
     if(!req.body) return res.status(400);
 
-    const board = req.body;
-    const columns = req.body.columns;
+    const board = req.body.board;
+    const deletedColumnsIds = req.body.deletedColumnsIds;
+
+    if (deletedColumnsIds.length) {
+        const tasksQuery = `select * from tasks
+            where boardId=${board.id} and columnId in (${deletedColumnsIds})`;
+
+        const tasksInDeletedColumns = await db.query(tasksQuery);
+
+        if (tasksInDeletedColumns) {
+            return res.status(500).send('Deleted columns includes tasks.');
+        }
+
+        const columns = board.columns;
+    }
 
     const updateBoardQuery = `UPDATE boards SET name='${board.name}' WHERE (boardId = '${board.id}')`;
 
