@@ -77,31 +77,6 @@ exports.saveBoard = async function(req, res){
     return res.json({ ...board, id: newBoardId });
 };
 
-exports.updateBoard = async function(req, res){
-    if(!req.body) return res.status(400);
-
-    const board = req.body.board;
-    const deletedColumnsIds = req.body.deletedColumnsIds;
-
-    if (deletedColumnsIds.length) {
-        const tasksQuery = `select * from tasks
-            where boardId=${board.id} and columnId in (${deletedColumnsIds})`;
-
-        const tasksInDeletedColumns = await db.query(tasksQuery);
-
-        if (tasksInDeletedColumns) {
-            return res.status(500).send('Deleted columns includes tasks.');
-        }
-
-        const columns = board.columns;
-    }
-
-    const updateBoardQuery = `UPDATE boards SET name='${board.name}' WHERE (boardId = '${board.id}')`;
-
-    await db.query(updateBoardQuery);
-
-    return res.status(200).send('OK');
-};
 
 exports.deleteBoard = async function(req, res){
     const boardId = req.params.id;
@@ -128,4 +103,65 @@ exports.getBoardsUsers = async function(req, res){
     const result = await db.query(query);
 
     return res.json(result);
+};
+
+exports.deleteColumn = async function(req, res){
+    if(!req.body) return res.status(400);
+
+    const boardId = req.body.boardId;
+    const columnId = req.body.columnId;
+
+    const tasksQuery = `select * from tasks
+            where boardId='${boardId}' and columnId='${columnId}'`;
+
+    const tasksInDeletedColumns = await db.query(tasksQuery);
+
+    if (tasksInDeletedColumns.length) {
+        return res.status(500).send('Deleted columns includes tasks.');
+    }
+
+    const deleteColumnQuery = `DELETE FROM boards_columns WHERE (boardId = '${boardId}' AND columnId = '${columnId}')`;
+
+    await db.query(deleteColumnQuery);
+
+    return res.status(200).send('OK');
+};
+
+exports.renameColumn = async function(req, res){
+    if(!req.body) return res.status(400);
+
+    const boardId = req.body.boardId;
+    const column = req.body.column;
+
+    const query = `UPDATE boards_columns SET columnName='${column.name}' WHERE (boardId = '${boardId}' and columnId = '${column.id}')`;
+
+    await db.query(query);
+
+    return res.status(200).send('OK');
+};
+
+exports.renameBoard = async function(req, res){
+    if(!req.body) return res.status(400);
+
+    const boardId = req.body.boardId;
+    const boardName = req.body.boardName;
+
+    const query = `UPDATE boards SET name='${boardName}' WHERE (boardId = '${boardId}')`;
+
+    await db.query(query);
+
+    return res.status(200).send('OK');
+};
+
+exports.addColumn = async function(req, res){
+    if(!req.body) return res.status(400);
+
+    const boardId = req.body.boardId;
+    const column = req.body.column;
+
+    const query = `INSERT boards_columns(boardId, columnId, columnName) VALUES ?`;
+
+    await db.query(query, [[[boardId, column.id, column.name]]]);
+
+    return res.status(200).send('OK');
 };

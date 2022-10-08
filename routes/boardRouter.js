@@ -7,8 +7,12 @@ boardRouter.route(`/list`).get(boardController.getBoards);
 
 boardRouter.route(`/:id`).get(boardController.getBoard);
 boardRouter.route(`/new`).post(boardController.saveBoard);
-boardRouter.route(`/:id`).put(boardController.updateBoard);
 boardRouter.route(`/:id`).delete(boardController.deleteBoard);
+boardRouter.route(`/board`).put(boardController.renameBoard);
+
+boardRouter.route(`/column/add`).put(boardController.addColumn);
+boardRouter.route(`/column/del`).delete(boardController.deleteColumn);
+boardRouter.route(`/column`).put(boardController.renameColumn);
 
 boardRouter.route(`/users/:id`).get(boardController.getBoardsUsers);
 
