@@ -14,3 +14,15 @@ exports.getUser = function (req, res) {
         res.send(result);
     });
 };
+
+exports.updateUser = async function (req, res) {
+    const userId = getUserId(req.headers.authorization);
+
+    const user = req.body;
+
+    const query = `UPDATE users SET name='${user.name}', username='${user.username}', phone='${user.phone}', email='${user.email}' WHERE (id = '${userId}')`;
+
+    await db.query(query);
+
+    return res.status(200).send('OK');
+};
