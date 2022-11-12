@@ -11,8 +11,9 @@ app.use(cors());
 app.use(express.json())
 app.use((req, res, next) => {
     const token = req.headers.authorization;
+    const isAuth = req.url === '/auth';
 
-    if (token) {
+    if (token && !isAuth) {
         jwt.verify(token.split(' ')[1], TOKEN_KEY, async function(err, decoded) {
             if (err) return next();
 
