@@ -26,3 +26,15 @@ exports.updateUser = async function (req, res) {
 
     return res.status(200).send('OK');
 };
+
+exports.updateUserPhoto = async function (req, res) {
+    const userId = getUserId(req.headers.authorization);
+
+    const photo = req.body.photo;
+
+    const query = `UPDATE users SET photo='${photo}' WHERE (id = '${userId}')`;
+
+    await db.query(query);
+
+    return res.status(200).send('OK');
+};
