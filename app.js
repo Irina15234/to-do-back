@@ -13,7 +13,9 @@ app.use((req, res, next) => {
     const token = req.headers.authorization;
     const isAuth = req.url === '/auth';
 
-    if (token && !isAuth) {
+    if (isAuth) return next();
+
+    if (token) {
         jwt.verify(token.split(' ')[1], TOKEN_KEY, async function(err, decoded) {
             if (err) return next();
 

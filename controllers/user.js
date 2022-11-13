@@ -38,3 +38,16 @@ exports.updateUserPhoto = async function (req, res) {
 
     return res.status(200).send('OK');
 };
+
+exports.updateUserParameters = async function (req, res) {
+    const userId = getUserId(req.headers.authorization);
+
+    const oldUsername = req.body.oldUsername;
+    const oldPassword = req.body.oldPassword;
+
+    const query = `SELECT username, password FROM users WHERE ${userId}=users.id`;
+
+    await db.query(query);
+
+    return res.status(200).send('OK');
+};
