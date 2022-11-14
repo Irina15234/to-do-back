@@ -51,3 +51,15 @@ exports.updateUserParameters = async function (req, res) {
 
     return res.status(200).send('OK');
 };
+
+exports.createUser = async function (req, res) {
+    console.log(req.body);
+
+    const values = [req.body.name, req.body.email, req.body.phone, req.body.username, req.body.password];
+
+    const query = `INSERT users(name, email, phone, username, password) VALUES ?`;
+
+    await db.query(query, [[values]]);
+
+    return res.status(200).send('OK');
+};
