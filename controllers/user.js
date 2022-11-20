@@ -47,7 +47,28 @@ exports.updateUserParameters = async function (req, res) {
 
     const query = `SELECT username, password FROM users WHERE ${userId}=users.id`;
 
-    await db.query(query);
+    const usersData = await db.query(query);
+
+    if (!usersData?.length) {
+        return res.status(500).send('User not found');
+    }
+
+    const userData = usersData[0];
+    if (userData.username !== oldUsername || userData.password !== oldPassword) {
+        return res.status(500).send('Username or password is wrong');
+    }
+    const newUsername = req.body.newUsername;
+    const newPassword = req.body.newPassword;
+    if (newUsername && newPassword) {
+        const updateQuery = `UPDATE users SET username='${req.body.newUsername}', password='${req.body.newPassword}' WHERE (id = '${userId}')`;
+        await db.query(updateQuery);
+    } else if (newUsername) {
+        const updateQuery = `UPDATE users SET username='${req.body.newUsername}' WHERE (id = '${userId}')`;
+        await db.query(updateQuery);
+    } else {
+        const updateQuery = `UPDATE users SET password='${req.body.newPassword}' WHERE (id = '${userId}')`;
+        await db.query(updateQuery);
+    }
 
     return res.status(200).send('OK');
 };
