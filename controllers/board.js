@@ -165,3 +165,14 @@ exports.addColumn = async function(req, res){
 
     return res.status(200).send('OK');
 };
+
+exports.getBoardColumns = async function(req, res){
+    const boardId = req.params.id;
+    const query = `select columnId as id, columnName as name
+            from boards_columns
+            where boards_columns.boardId=${boardId}`;
+
+    const result = await db.query(query);
+
+    return res.json(result);
+};
