@@ -16,9 +16,9 @@ exports.getComments = async function(req, res){
 exports.saveComment = async function(req, res){
     const userId = getUserId(req.headers.authorization);
 
-    const values = [req.body.id, req.body.date, userId, req.body.parentId, req.body.text];
+    const values = [req.body.date, userId, req.body.parentId, req.body.text];
 
-    const query = `INSERT comments(id, date, authorId, parentId, text) VALUES ?`;
+    const query = `INSERT comments(date, authorId, parentId, text) VALUES ?`;
 
     await db.query(query, [[values]]);
 
