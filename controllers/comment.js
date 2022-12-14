@@ -1,24 +1,28 @@
 const db = require('../connection');
-const {getUserId} = require("../common/helpers");
+const {getUserId, setCommentsTree} = require("../common/helpers");
 
 exports.getComments = async function(req, res){
     const taskId = req.params.taskId;
 
-    const query = `select id, date, authorId, parentId, text
+    const query = `select id, date, authorId, parentId, text, authorName
             from comments
             where comments.taskId=${taskId}`;
 
     const result = await db.query(query);
 
-    return res.json(result);
+    const correctResult = result.filter((item) => !item.parentId);
+    setCommentsTree(correctResult, result);
+
+    return res.json(correctResult);
 };
 
 exports.saveComment = async function(req, res){
     const userId = getUserId(req.headers.authorization);
+    const date = new Date();
 
-    const values = [req.body.date, userId, req.body.parentId, req.body.text];
+    const values = [date, userId, req.body.parentId, req.body.text, req.body.taskId, req.body.authorName];
 
-    const query = `INSERT comments(date, authorId, parentId, text) VALUES ?`;
+    const query = `INSERT comments(date, authorId, parentId, text, taskId, authorName) VALUES ?`;
 
     await db.query(query, [[values]]);
 
