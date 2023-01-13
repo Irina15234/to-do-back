@@ -20,10 +20,11 @@ exports.getTasks = async function(req, res){
     if (view === 'BOARD') {
         const boardId = req.query.boardId;
 
-        const query = `select tasks.id, tasks.name, dictionaries.priority.icon as priorityIcon, tasks.columnId
+        const query = `select tasks.id, tasks.name, dictionaries.priority.icon as priorityIcon, tasks.columnId, users.name as executorName, users.photo as executorPhoto
         from tasks
         join dictionaries.priority on dictionaries.priority.id=tasks.priorityId
         join boards_users on tasks.boardId = boards_users.boardId
+        left join users on tasks.executorId = users.id
         where tasks.boardId=${boardId}`;
 
         const result = await db.query(query);
