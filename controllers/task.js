@@ -25,7 +25,8 @@ exports.getTasks = async function(req, res){
         join dictionaries.priority on dictionaries.priority.id=tasks.priorityId
         join boards_users on tasks.boardId = boards_users.boardId
         left join users on tasks.executorId = users.id
-        where tasks.boardId=${boardId}`;
+        where tasks.boardId=${boardId}
+        order by dictionaries.priority.id desc`;
 
         const result = await db.query(query);
 
