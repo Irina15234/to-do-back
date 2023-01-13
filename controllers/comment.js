@@ -4,16 +4,17 @@ const {getUserId, setCommentsTree} = require("../common/helpers");
 exports.getComments = async function(req, res){
     const taskId = req.params.taskId;
 
-    const query = `select id, date, authorId, parentId, text, authorName
+    const query = `select id, date, authorId, parentId, text, authorName, isDeleted
             from comments
             where comments.taskId=${taskId}`;
 
     const result = await db.query(query);
+    const correctResult = result.map((item) => ({ ...item, isDeleted: Boolean(item.isDeleted)  }));
 
-    const correctResult = result.filter((item) => !item.parentId);
-    setCommentsTree(correctResult, result);
+    const parentsComments = correctResult.filter((item) => !item.parentId);
+    setCommentsTree(parentsComments, correctResult);
 
-    return res.json(correctResult);
+    return res.json(parentsComments);
 };
 
 exports.saveComment = async function(req, res){
@@ -31,8 +32,9 @@ exports.saveComment = async function(req, res){
 
 exports.updateComment = async function(req, res){
     const id = req.params.id;
+    const date = new Date();
 
-    const updateQuery = `UPDATE comments SET text='${req.body.text}' update='${req.body.update}' WHERE (id = '${id}')`;
+    const updateQuery = `UPDATE comments SET text='${req.body.text}' update='${date}' WHERE (id = '${id}')`;
     await db.query(updateQuery);
 
     return res.status(200).send('OK');
@@ -41,8 +43,9 @@ exports.updateComment = async function(req, res){
 exports.deleteComment = async function(req, res){
     const id = req.params.id;
 
-    const deleteQuery = `DELETE FROM comments WHERE (id = '${id}');`;
+    const isCommentWithChildren = (await db.query(`select * from comments where comments.parentId=${id}`)).length > 0;
 
+    const deleteQuery = isCommentWithChildren ? `UPDATE comments SET isDeleted='${1}' WHERE (id = '${id}')` : `DELETE FROM comments WHERE (id = '${id}');`;
     await db.query(deleteQuery);
 
     return res.status(200).send('OK');
