@@ -1,5 +1,5 @@
 const db = require('../connection');
-const {getUserId, setCommentsTree} = require("../common/helpers");
+const {getUserId, setTree} = require("../common/helpers");
 
 exports.getComments = async function(req, res){
     const taskId = req.params.taskId;
@@ -12,7 +12,7 @@ exports.getComments = async function(req, res){
     const correctResult = result.map((item) => ({ ...item, isDeleted: Boolean(item.isDeleted)  }));
 
     const parentsComments = correctResult.filter((item) => !item.parentId);
-    setCommentsTree(parentsComments, correctResult);
+    setTree(parentsComments, correctResult);
 
     return res.json(parentsComments);
 };

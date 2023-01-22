@@ -13,16 +13,16 @@ const getUserId = (token) => {
     return id;
 };
 
-const setCommentsTree = (commentsList, fullCommentsList) => {
+const setTree = (commentsList, fullCommentsList) => {
     return commentsList.reduce(function(prev,current){
         const children = fullCommentsList.filter((resItem) => resItem.parentId === current.id) || [];
         children.length && (current.children = children);
 
-        return setCommentsTree(children, fullCommentsList);
+        return setTree(children, fullCommentsList);
     }, []);
 };
 
 module.exports = Object.freeze({
     getUserId: getUserId,
-    setCommentsTree: setCommentsTree,
+    setTree: setTree,
 });

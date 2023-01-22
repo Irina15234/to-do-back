@@ -1,5 +1,5 @@
 const db = require('../connection');
-const {getUserId} = require("../common/helpers");
+const {getUserId, setTree} = require("../common/helpers");
 
 exports.getTasks = async function(req, res){
     const userId = getUserId(req.headers.authorization);
@@ -20,7 +20,7 @@ exports.getTasks = async function(req, res){
     if (view === 'BOARD') {
         const boardId = req.query.boardId;
 
-        const query = `select tasks.id, tasks.name, dictionaries.priority.icon as priorityIcon, tasks.columnId, users.name as executorName, users.photo as executorPhoto
+        const query = `select tasks.id, tasks.name, dictionaries.priority.icon as priorityIcon, tasks.columnId, users.name as executorName, users.photo as executorPhoto, tasks.parentId
         from tasks
         join dictionaries.priority on dictionaries.priority.id=tasks.priorityId
         join boards_users on tasks.boardId = boards_users.boardId
@@ -30,7 +30,10 @@ exports.getTasks = async function(req, res){
 
         const result = await db.query(query);
 
-        return res.json(result);
+        const parentsComments = result.filter((item) => !item.parentId);
+        setTree(parentsComments, result);
+
+        return res.json(parentsComments);
     }
 };
 
@@ -83,8 +86,8 @@ exports.saveTask = async function(req, res){
 
     const task = req.body;
 
-    const addTaskQuery = `INSERT tasks(name, authorId, executorId, date, boardId, priorityId, columnId) 
-    VALUES ('${task.name}', '${task.authorId}', '${task.executorId}', '${task.date}', '${task.boardId}', '${task.priorityId}', '${task.columnId}')`;
+    const addTaskQuery = `INSERT tasks(name, authorId, executorId, date, boardId, priorityId, columnId, parentId) 
+    VALUES ('${task.name}', '${task.authorId}', '${task.executorId}', '${task.date}', '${task.boardId}', '${task.priorityId}', '${task.columnId}', '${task.parentId}')`;
     const getTaskIdQuery = `SELECT id FROM tasks ORDER BY id DESC LIMIT 1`;
 
     await db.query(addTaskQuery);
