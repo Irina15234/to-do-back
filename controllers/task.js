@@ -39,7 +39,7 @@ exports.getTasks = async function(req, res){
 
 exports.getTask = async function(req, res){
     const taskId = req.params.id;
-    console.log(taskId);
+
     const query = `select distinct tasks.id, tasks.authorId, tasks.executorId, tasks.name, dictionaries.priority.name as priorityName,
         dictionaries.priority.icon as priorityIcon, dictionaries.priority.id as priorityId, tasks.columnId, tasks.date, tasks.boardId, boards.name as boardName
         from tasks
@@ -49,7 +49,7 @@ exports.getTask = async function(req, res){
         where tasks.id=${taskId}`;
 
     const result = await db.query(query);
-    console.log(result);
+
     const finishResult = result.map((item) => {
         const finishItem = {...item};
         finishItem.priority = {
