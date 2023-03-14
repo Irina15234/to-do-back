@@ -6,7 +6,7 @@ exports.getTasks = async function(req, res){
     const view = req.query.view || 'MAIN';
 
     if (view === 'MAIN') {
-        const query = `select tasks.id, tasks.name, dictionaries.priority.icon as priorityIcon, dictionaries.priority.name as priorityName
+        const query = `select distinct tasks.id, tasks.name, dictionaries.priority.icon as priorityIcon, dictionaries.priority.name as priorityName
             from tasks
             join dictionaries.priority on dictionaries.priority.id=tasks.priorityId
             where ${userId}=tasks.executorId
@@ -20,7 +20,7 @@ exports.getTasks = async function(req, res){
     if (view === 'BOARD') {
         const boardId = req.query.boardId;
 
-        const query = `select tasks.id, tasks.name, dictionaries.priority.icon as priorityIcon, tasks.columnId, users.name as executorName, users.photo as executorPhoto, tasks.parentId
+        const query = `select distinct tasks.id, tasks.name, dictionaries.priority.icon as priorityIcon, tasks.columnId, users.name as executorName, users.photo as executorPhoto, tasks.parentId
         from tasks
         join dictionaries.priority on dictionaries.priority.id=tasks.priorityId
         join boards_users on tasks.boardId = boards_users.boardId
@@ -86,8 +86,10 @@ exports.saveTask = async function(req, res){
 
     const task = req.body;
 
+    const parentId = task.parentId ? "'" + task.parentId + "'" : null;
+
     const addTaskQuery = `INSERT tasks(name, authorId, executorId, date, boardId, priorityId, columnId, parentId) 
-    VALUES ('${task.name}', '${task.authorId}', '${task.executorId}', '${task.date}', '${task.boardId}', '${task.priorityId}', '${task.columnId}', '${task.parentId}')`;
+    VALUES ('${task.name}', '${task.authorId}', '${task.executorId}', '${task.date}', '${task.boardId}', '${task.priorityId}', '${task.columnId}', ${parentId})`;
     const getTaskIdQuery = `SELECT id FROM tasks ORDER BY id DESC LIMIT 1`;
 
     await db.query(addTaskQuery);
