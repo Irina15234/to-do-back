@@ -95,6 +95,32 @@ exports.deleteBoard = async function(req, res){
 };
 
 exports.getBoardsUsers = async function(req, res){
+    const view = req.query.view;
+
+    if (view === 'FULL') {
+        const query = `select boards_users.userId as id, users.name, users.photo, roles.name as roleName, roles.id as roleId
+            from boards_users
+            join users on users.id=boards_users.userId
+            join dictionaries.roles on roles.id=boards_users.roleId
+            where boards_users.boardId=${req.params.id}`;
+
+        const result = await db.query(query);
+
+        const correctResult = result.map((item) => ({ id: item.id, name: item.name, photo: item.photo, role: { id: item.roleId, name: item.roleName } }));
+
+        return res.json(correctResult);
+    }
+
+    if (view === 'INACTIVE') {
+        const query = `select id, name, photo
+                from users
+                where users.id not in (select userId from boards_users where boardId=${req.params.id})`;
+
+        const result = await db.query(query);
+
+        return res.json(result);
+    }
+
     const query = `select boards_users.userId as id, users.name, users.photo
             from boards_users
             join users on users.id=boards_users.userId
@@ -175,4 +201,27 @@ exports.getBoardColumns = async function(req, res){
     const result = await db.query(query);
 
     return res.json(result);
+};
+
+exports.updateUsers = async function(req, res){
+    const users = req.body;
+    const boardId = req.params.id;
+
+    const deletedUsers = users.filter((user) => user.changeType === 'delete').map((user) => user.id);
+    const addedUsers = users.filter((user) => user.changeType === 'add').map((user) => ({ userId: user.id, roleId: user.role.id }));
+    const editedUsers = users.filter((user) => user.changeType === 'edit').map((user) => ({ userId: user.id, roleId: user.role.id }));
+
+    if (deletedUsers.length || editedUsers.length) {
+        const deletedUsersList = deletedUsers.concat(editedUsers.map((user) => user.userId)).join(',');
+        const deleteQuery = `DELETE FROM boards_users WHERE (boardId = '${boardId}' AND userId IN (${deletedUsersList}))`;
+        await db.query(deleteQuery);
+    }
+
+    if (addedUsers.length || editedUsers.length) {
+        const addedUsersList = addedUsers.concat(editedUsers).map((user) => [boardId, user.userId, user.roleId]);
+        const addQuery = `INSERT boards_users(boardId, userId, roleId) VALUES ?`;
+        await db.query(addQuery, [addedUsersList]);
+    }
+
+    return res.status(200).send('OK');
 };

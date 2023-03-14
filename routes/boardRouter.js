@@ -15,6 +15,8 @@ boardRouter.route(`/column/del`).delete(boardController.deleteColumn);
 boardRouter.route(`/column`).put(boardController.renameColumn);
 
 boardRouter.route(`/users/:id`).get(boardController.getBoardsUsers);
+boardRouter.route(`/users/:id`).put(boardController.updateUsers);
+
 boardRouter.route(`/columns/:id`).get(boardController.getBoardColumns);
 
 module.exports = boardRouter;
