@@ -8,6 +8,8 @@ jwt.verifyP = promisify(jwt.verify);
 const app = express();
 app.use(cors());
 
+require('./common/ws');
+
 app.use(express.json())
 app.use((req, res, next) => {
     const token = req.headers.authorization;
@@ -75,4 +77,3 @@ app.use("/dictionary", [dictionaryRouter]);
 app.listen(4000, function(){
     console.log("Сервер ожидает подключения...");
 });
-

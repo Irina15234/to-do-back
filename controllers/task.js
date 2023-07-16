@@ -1,5 +1,6 @@
 const db = require('../connection');
 const {getUserId, setTree} = require("../common/helpers");
+const {handleMessage, EventTypes, StatusTypes} = require("../common/ws");
 
 exports.getTasks = async function(req, res){
     const userId = getUserId(req.headers.authorization);
@@ -70,14 +71,16 @@ exports.getTask = async function(req, res){
 exports.changeColumns = async function(req, res){
     const targetColumnId = req.body.targetColumnId;
     const taskId = req.body.taskId;
+    const boardId = req.body.boardId;
 
     const query = `UPDATE tasks SET columnId=${targetColumnId} where id=${taskId}`;
 
     try {
         db.query(query);
+        handleMessage({ type: EventTypes.BOARD_STATUS, message: StatusTypes.OUTDATED }, boardId, true);
         return res.status(200).send('OK');
     } catch (error) {
-        return res.status(500).send(error);
+        return res.status(500).send('Error');
     }
 };
 
@@ -96,6 +99,7 @@ exports.saveTask = async function(req, res){
 
     const newTaskId = await db.query(getTaskIdQuery);
 
+    handleMessage({ type: EventTypes.BOARD_STATUS, message: StatusTypes.OUTDATED }, task.boardId, true);
     return res.json(newTaskId[0].id);
 };
 
