@@ -19,8 +19,6 @@ app.use((req, res, next) => {
 
     if (token) {
         jwt.verify(token.split(' ')[1], TOKEN_KEY, async function(err, decoded) {
-            if (err) return next();
-
             if (decoded) {
                 const users = await db.query("SELECT * FROM users");
                 for (let user of users) {
