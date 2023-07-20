@@ -4,14 +4,24 @@ const {getUserId} = require("../common/helpers");
 exports.getBoards = async function(req, res){
     const userId = getUserId(req.headers.authorization);
 
-    const query = `select boards.boardId as id, boards.name
+    const query = `select boards.boardId as id, boards.name, roleId
             from boards
             join boards_users on boards.boardId=boards_users.boardId
             where boards_users.userId=${userId}`;
 
-    const result = await db.query(query);
+    const permissionQuery = `select * from dictionaries.roles_permissions`;
 
-    return res.json(result);
+    const result = await db.query(query);
+    const permissionResult = await db.query(permissionQuery);
+
+    const finishResult = [];
+    result.forEach((item) => {
+        const permissions = permissionResult.filter((permItem) => permItem.roleId === item.roleId)
+            .map((permItem) => permItem.permissionId);
+        finishResult.push({ id: item.id, name: item.name, permissions });
+    });
+
+    return res.json(finishResult);
 };
 
 exports.getBoard = async function(req, res){
