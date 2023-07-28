@@ -8,8 +8,10 @@ https://github.com/Irina15234/to-do-front
 ## Database
 
 - Dictionary tables
+
   ![](./demo/dictionary.png)
 - System tables
+
   ![](./demo/system.png)
 
 ___
