@@ -37,7 +37,7 @@ exports.getBoard = async function(req, res){
         const index = finishResult.findIndex((i) => i.id === item.id);
         const isNeedAddItem = index === -1;
         if (isNeedAddItem) {
-            const newItem = {...item, columns: item.columnName ? [{id: item.columnId,name: item.columnName}] : []};
+            const newItem = {...item, permissions: [1, 2, 3], columns: item.columnName ? [{id: item.columnId,name: item.columnName}] : []};
             delete newItem.columnId;
             delete newItem.columnName;
             finishResult.push(newItem);
